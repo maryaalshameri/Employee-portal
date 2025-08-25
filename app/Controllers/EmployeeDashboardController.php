@@ -195,7 +195,9 @@ public function dashboard()
     public function leavesHistory()
     {
         Auth::check();
+         $employeeId = $this->getEmployeeId();
         $employeeId = $_SESSION['user']['employee_id'];
+       
         $leaves = Leave::getEmployeeLeaves($employeeId);
         
         $this->render('employee/leaves-history.php', [
@@ -206,6 +208,7 @@ public function dashboard()
     public function salariesHistory()
     {
         Auth::check();
+       $employeeId = $this->getEmployeeId();
         $employeeId = $_SESSION['user']['employee_id'];
         $salaries = Salary::getEmployeeSalaries($employeeId);
         
@@ -386,7 +389,7 @@ public function submitLeaveRequest()
         
         // التحقق من رصيد الإجازات
         if ($employee['leaveBalance'] < $daysRequested) {
-            throw new \Exception("رصيد الإجازات غير كافي. الرصيد المتاح: {$employee['leaveBalance']} يوم");
+            throw new \Exception("رصيد الإجازات غير كافي. الرصيد المتاح: {$employee['leaveBalance']} يوم ");
         }
         
         // إنشاء طلب الإجازة
