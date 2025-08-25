@@ -3,8 +3,10 @@ namespace App\Models;
 
 use App\Core\App;
 use PDO;
+use App\Traits\LoggingTrait; 
 
 class Salary {
+     use LoggingTrait;
     public static function all() {
         $stmt = App::db()->prepare("
             SELECT s.*, e.id as employee_id, u.name as employee_name 

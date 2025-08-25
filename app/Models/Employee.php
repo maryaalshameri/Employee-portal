@@ -1,10 +1,11 @@
 <?php
 namespace App\Models;
-
+use App\Traits\LoggingTrait; 
 use App\Core\App;
 use PDO;
 
 class Employee {
+     use LoggingTrait;
     public static function all() {
         $stmt = App::db()->prepare("SELECT employees.*, users.name, users.email, users.role
                                     FROM employees

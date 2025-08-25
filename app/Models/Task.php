@@ -3,55 +3,9 @@ namespace App\Models;
 
 use App\Core\App;
 use PDO;
-
+use App\Traits\LoggingTrait; 
 class Task {
-    // public static function create($data) {
-    //     $stmt = App::db()->prepare("
-    //         INSERT INTO tasks 
-    //         (title, description, assigned_to, due_date, priority, status, created_by)
-    //         VALUES 
-    //         (:title, :description, :assigned_to, :due_date, :priority, 'todo', :created_by)
-    //     ");
-    //     return $stmt->execute($data);
-    // }
-    
-    // public static function find($id) {
-    //     $stmt = App::db()->prepare("
-    //         SELECT t.*, e.id as employee_id, u.name as employee_name,
-    //                creator.name as created_by_name
-    //         FROM tasks t
-    //         JOIN employees e ON t.assigned_to = e.id
-    //         JOIN users u ON e.user_id = u.id
-    //         LEFT JOIN users creator ON t.created_by = creator.id
-    //         WHERE t.id = :id
-    //     ");
-    //     $stmt->execute(['id' => $id]);
-    //     return $stmt->fetch(PDO::FETCH_ASSOC);
-    // }
-    
-    // public static function updateStatus($id, $status) {
-    //     $stmt = App::db()->prepare("
-    //         UPDATE tasks 
-    //         SET status = :status, updated_at = NOW()
-    //         WHERE id = :id
-    //     ");
-    //     return $stmt->execute([
-    //         'id' => $id,
-    //         'status' => $status
-    //     ]);
-    // }
-    
-    // public static function getEmployeeTasks($employeeId) {
-    //     $stmt = App::db()->prepare("
-    //         SELECT t.*, creator.name as created_by_name
-    //         FROM tasks t
-    //         LEFT JOIN users creator ON t.created_by = creator.id
-    //         WHERE t.assigned_to = :employee_id
-    //         ORDER BY t.due_date ASC, t.priority DESC
-    //     ");
-    //     $stmt->execute(['employee_id' => $employeeId]);
-    //     return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    // }
+     use LoggingTrait;
 
     public static function create($data)
 {
