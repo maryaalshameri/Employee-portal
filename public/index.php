@@ -1,13 +1,9 @@
 <?php
+
 session_start();
 
 // تحميل البيئة
-$env = parse_ini_file(__DIR__ . '/../.env');
 
-define('DB_HOST', $env['DB_HOST']);
-define('DB_NAME', $env['DB_NAME']);
-define('DB_USER', $env['DB_USER']);
-define('DB_PASS', $env['DB_PASS']);
 
 // autoload
 spl_autoload_register(function ($class) {
@@ -19,4 +15,5 @@ spl_autoload_register(function ($class) {
 
 require __DIR__ . '/../routes/web.php';
 
+$router->dispatch($_GET['url'] ?? '', $_SERVER['REQUEST_METHOD']);
 // تسجيل الدخول والخروج

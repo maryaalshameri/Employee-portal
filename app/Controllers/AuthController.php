@@ -29,6 +29,7 @@ class AuthController {
             $_SESSION['error'] = "بيانات الدخول غير صحيحة";
             header("Location: /employee-portal/public/login");
         }
+        
     }
 
     public function logout() {
