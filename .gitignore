@@ -1,0 +1,39 @@
+# dependencies
+/vendor/
+/node_modules/
+
+# environment variables
+.env
+.env.local
+
+# logs
+*.log
+logs/
+
+# operating system
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# temporary files
+tmp/
+temp/
+
+# cache
+cache/
+
+# uploads
+uploads/
+
+# local server
+public/storage
+storage/*.key
+
+# other
+composer.lock
+package-lock.json
