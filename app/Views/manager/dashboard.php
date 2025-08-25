@@ -1,5 +1,4 @@
 <div class="container mx-auto">
-    <h1 class="text-2xl font-bold mb-6">لوحة تحكم المدير - قسم <?= htmlspecialchars($manager['department']) ?></h1>
 
     <!-- الإشعارات -->
     <?php if ($stats['pending_leaves'] > 0 || $stats['pending_salaries'] > 0): ?>
