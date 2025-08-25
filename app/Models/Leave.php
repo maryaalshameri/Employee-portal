@@ -1,11 +1,11 @@
 <?php
 namespace App\Models;
-
+use App\Traits\LoggingTrait; 
 use App\Core\App;
 use PDO;
 
 class Leave {
-    
+     use LoggingTrait;
     public static function all() {
         $stmt = App::db()->prepare("
             SELECT l.*, e.id as employee_id, u.name as employee_name, 
