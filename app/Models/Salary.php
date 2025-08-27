@@ -52,49 +52,170 @@ class Salary {
     }
 
     public static function create($data) {
+
+        $salary = new self();
+    
+    try {
         $stmt = App::db()->prepare("
             INSERT INTO salaries 
             (employee_id, amount, bonusPercentage, deductionPercentage, payment_date,comments, status) 
             VALUES (:employee_id, :amount, :bonusPercentage, :deductionPercentage, :payment_date, :comments, 'pending')
         ");
-        return $stmt->execute($data);
+        $result = $stmt->execute($data);
+        
+        if ($result) {
+            $salary->log("تم إنشاء طلب راتب جديد", [
+                'employee_id' => $data['employee_id'],
+                'amount' => $data['amount'],
+                'bonusPercentage'=> $data['bonusPercentage'],
+                'deductionPercentage' =>$data['deductionPercentage'],
+                'salary_id' => App::db()->lastInsertId()
+            ]);
+            return true;
+        }
+        
+    } catch (\Exception $e) {
+        $salary->log("خطأ في إنشاء طلب الراتب", [
+            'error' => $e->getMessage(),
+            'data' => $data
+        ]);
+        throw $e;
+    }
     }
 
     public static function approve($id, $approved_by, $comments = null) {
+
+
+       $salary = new self();
+    
+     try {
         $stmt = App::db()->prepare("
             UPDATE salaries 
             SET status = 'approved', approved_by = :approved_by, comments = :comments, updated_at = NOW() 
             WHERE id = :id
         ");
-        return $stmt->execute([
+        $data['id'] = $id;
+        $data['approved_by'] = $approved_by;
+        $data['comments'] = $comments;
+
+        $result = $stmt->execute([
             'id' => $id,
             'approved_by' => $approved_by,
             'comments' => $comments
         ]);
+        
+        if ($result) {
+            $salary->log("تم الموافقة  على الراتب ", [
+                'id' => $data['id'],
+                'approved_by'=>$data['approved_by'],
+                'comments'=>$data['comments'],
+               
+            ]);
+            return true;
+        }
+        
+    } catch (\Exception $e) {
+        $salary->log("خطأ الوافقة على الراتب", [
+            'error' => $e->getMessage(),
+            'data' => $data
+        ]);
+        throw $e;
+    }
     }
 
     public static function reject($id, $approved_by, $comments = null) {
+
+             $salary = new self();
+    
+    try {
         $stmt = App::db()->prepare("
             UPDATE salaries 
             SET status = 'rejected', approved_by = :approved_by, comments = :comments, updated_at = NOW() 
             WHERE id = :id
         ");
-        return $stmt->execute([
+        $data['id'] = $id;
+        $data['approved_by'] = $approved_by;
+        $data['comments'] = $comments;
+        $result = $stmt->execute([
             'id' => $id,
             'approved_by' => $approved_by,
             'comments' => $comments
         ]);
+        
+        if ($result) {
+            $salary->log("تم الرفض  على الراتب ", [
+                'id' => $data['id'],
+                'approved_by'=>$data['approved_by'],
+                'comments'=>$data['comments'],
+               
+            ]);
+            return true;
+        }
+        
+    } catch (\Exception $e) {
+        $salary->log("خطأ في الرفض على الراتب", [
+            'error' => $e->getMessage(),
+            'data' => $data
+        ]);
+        throw $e;
+    }
     }
 
     public static function softDelete($id) {
+        // $stmt = App::db()->prepare("UPDATE salaries SET deleted_at = NOW() WHERE id = :id");
+        // return $stmt->execute(['id' => $id]);
+                 $salary = new self();
+    
+    try {
         $stmt = App::db()->prepare("UPDATE salaries SET deleted_at = NOW() WHERE id = :id");
-        return $stmt->execute(['id' => $id]);
+        $data['id'] = $id;
+        $result = $stmt->execute(['id' => $id]);
+        
+        if ($result) {
+            $salary->log("تم نقل الاجازه الى سلة المهملات ", [
+                'id' => $data['id']
+               
+            ]);
+            return true;
+        }
+        
+    } catch (\Exception $e) {
+        $salary->log("خطأ في نقل الراتب الى سلة المهملات", [
+            'error' => $e->getMessage(),
+            'data' => $data
+        ]);
+        throw $e;
+    }
     
     }
 
     public static function forceDelete($id) {
-    $stmt = App::db()->prepare("DELETE FROM salaries WHERE id = :id");
-    return $stmt->execute(['id' => $id]);
+    // $stmt = App::db()->prepare("DELETE FROM salaries WHERE id = :id");
+    // return $stmt->execute(['id' => $id]);                  
+      $salary = new self();
+    
+    try {
+        $stmt = App::db()->prepare("DELETE FROM salaries WHERE id = :id");
+        $data['id'] = $id;
+        $result = $stmt->execute(['id' => $id]);
+        
+        if ($result) {
+            $salary->log("تم حذف  الراتب نهائيا ", [
+                'id' => $data['id']
+               
+            ]);
+            return true;
+        }
+        
+    } catch (\Exception $e) {
+        $salary->log("خطأ في  حذف  الراتب نهائيا ", [
+            'error' => $e->getMessage(),
+            'data' => $data
+        ]);
+        throw $e;
+    }
+
+
 }
 
 
@@ -117,8 +238,30 @@ class Salary {
 
 
     public static function restore($id) {
+        // $stmt = App::db()->prepare("UPDATE salaries SET deleted_at = NULL WHERE id = :id");
+        // return $stmt->execute(['id' => $id]);
+                            $salary = new self();
+    
+    try {
         $stmt = App::db()->prepare("UPDATE salaries SET deleted_at = NULL WHERE id = :id");
-        return $stmt->execute(['id' => $id]);
+        $data['id'] = $id;
+        $result = $stmt->execute(['id' => $id]);
+        
+        if ($result) {
+            $salary->log("تم استعادة الراتب من سلة المهملات ", [
+                'id' => $data['id']
+               
+            ]);
+            return true;
+        }
+        
+    } catch (\Exception $e) {
+        $salary->log("خطأ في استعادة الراتب من سلة المهملات", [
+            'error' => $e->getMessage(),
+            'data' => $data
+        ]);
+        throw $e;
+    }
     }
 
     public static function hasPendingSalaries() {

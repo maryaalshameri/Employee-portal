@@ -61,94 +61,7 @@ public function dashboard()
     ], 'employee/dashboard-layout.php');
 }
 
-//     public function profile()
-//    {
-//         Auth::check();
-//         $employee = Employee::findByUserId($_SESSION['user']['id']);
-        
-//         $this->render('employee/profile.php', [
-//             'employee' => $employee
-//         ], 'employee/dashboard-layout.php'); // ← إضافة الـ layout المخصص
-//     }
 
-    // public function leaveRequestForm()
-    // {
-    //     Auth::check();
-    //     $employee = Employee::findByUserId($_SESSION['user']['id']);
-        
-    //     $this->render('employee/leave-request.php', [
-    //         'employee' => $employee
-    //     ], 'employee/dashboard-layout.php');
-    // }
-
-    // public function submitLeaveRequest()
-    // {
-    //     Auth::check();
-        
-    //     $employeeId = $_SESSION['user']['employee_id'];
-    //     $employee = Employee::findByUserId($_SESSION['user']['id']);
-        
-    //     $startDate = $_POST['start_date'] ?? '';
-    //     $endDate = $_POST['end_date'] ?? '';
-    //     $type = $_POST['type'] ?? '';
-    //     $reason = $_POST['reason'] ?? '';
-        
-    //     try {
-    //         // التحقق من صحة التواريخ
-    //         if (empty($startDate) || empty($endDate)) {
-    //             throw new \Exception("يجب تحديد تاريخ البداية والنهاية");
-    //         }
-            
-    //         $start = new \DateTime($startDate);
-    //         $end = new \DateTime($endDate);
-            
-    //         if ($end <= $start) {
-    //             throw new \Exception("تاريخ النهاية يجب أن يكون بعد تاريخ البداية");
-    //         }
-            
-    //         // حساب عدد الأيام
-    //         $interval = $start->diff($end);
-    //         $daysRequested = $interval->days + 1;
-            
-    //         // التحقق من رصيد الإجازات
-    //         if ($employee['leaveBalance'] < $daysRequested) {
-    //             throw new \Exception("رصيد الإجازات غير كافي. الرصيد المتاح: {$employee['leaveBalance']} يوم");
-    //         }
-            
-    //         // إنشاء طلب الإجازة
-    //         $result = Leave::create([
-    //             'employee_id' => $employeeId,
-    //             'start_date' => $startDate,
-    //             'end_date' => $endDate,
-    //             'type' => $type,
-    //             'reason' => $reason
-    //         ]);
-            
-    //         if ($result) {
-    //             $_SESSION['success'] = "تم تقديم طلب الإجازة بنجاح وانتظار الموافقة";
-    //         } else {
-    //             $_SESSION['error'] = "فشل في تقديم طلب الإجازة";
-    //         }
-            
-    //     } catch (\Throwable $e) {
-    //         $_SESSION['error'] = $e->getMessage();
-    //     }
-        
-    //     header("Location: /employee-portal/public/employee/leaves");
-    //     exit;
-    // }
-
-    // public function salaryRequestForm()
-    // {
-    //     Auth::check();
-    //     $employee = Employee::findByUserId($_SESSION['user']['id']);
-    //     $lastSalaryRequest = Salary::getLastEmployeeSalaryRequest($_SESSION['user']['employee_id']);
-        
-    //     $this->render('employee/salary-request.php', [
-    //         'employee' => $employee,
-    //         'lastSalaryRequest' => $lastSalaryRequest
-    //     ], 'employee/dashboard-layout.php');
-    // }
 
     public function submitSalaryRequest()
     {
@@ -303,16 +216,7 @@ public function updateTaskStatus($taskId)
     exit;
 }
 
-// public function profile()
-// {
-//     Auth::check();
-    
-//     $employee = Employee::findByUserId($_SESSION['user']['id']);
-    
-//     $this->render('employee/profile.php', [
-//         'employee' => $employee
-//     ], 'employee/dashboard-layout.php');
-// }
+
 
 public function updateProfile()
 {
@@ -341,22 +245,7 @@ public function updateProfile()
     header("Location: /employee-portal/public/employee/profile");
     exit;
 }
-// public function leaveRequestForm()
-// {
-//     Auth::check();
-    
-//     $employee = Employee::findByUserId($_SESSION['user']['id']);
-    
-//     if (!$employee) {
-//         $_SESSION['error'] = "لم يتم العثور على بيانات الموظف";
-//         header("Location: /employee-portal/public/login");
-//         exit;
-//     }
-    
-//     $this->render('employee/leave-request.php', [
-//         'employee' => $employee
-//     ], 'employee/dashboard-layout.php');
-// }
+
 
 public function submitLeaveRequest()
 {

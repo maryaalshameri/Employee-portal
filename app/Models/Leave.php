@@ -52,16 +52,35 @@ class Leave {
     
     public static function create($data)
     {
-        $db = App::db();
+        // $db = App::db();
         
-        $sql = "INSERT INTO leaves 
+        // $sql = "INSERT INTO leaves 
+        //         (employee_id, start_date, end_date, days_requested, type, reason, status)
+        //         VALUES 
+        //         (:employee_id, :start_date, :end_date, :days_requested, :type, :reason, :status)";
+        
+        // $stmt = $db->prepare($sql);
+        
+        // return $stmt->execute([
+        //     ':employee_id' => $data['employee_id'],
+        //     ':start_date' => $data['start_date'],
+        //     ':end_date' => $data['end_date'],
+        //     ':days_requested' => $data['days_requested'],
+        //     ':type' => $data['type'],
+        //     ':reason' => $data['reason'],
+        //     ':status' => $data['status']
+        // ]);
+
+            $leavs = new self();
+    
+    try {
+        $db = App::db();
+         $sql = "INSERT INTO leaves 
                 (employee_id, start_date, end_date, days_requested, type, reason, status)
                 VALUES 
                 (:employee_id, :start_date, :end_date, :days_requested, :type, :reason, :status)";
-        
         $stmt = $db->prepare($sql);
-        
-        return $stmt->execute([
+        $result = $stmt->execute([
             ':employee_id' => $data['employee_id'],
             ':start_date' => $data['start_date'],
             ':end_date' => $data['end_date'],
@@ -70,43 +89,111 @@ class Leave {
             ':reason' => $data['reason'],
             ':status' => $data['status']
         ]);
+        
+        if ($result) {
+            $leavs->log("تم طلب إجازه جديدة", [
+                'type' => $data['type'],
+                'days_requested' => $data['days_requested'],
+                'leave_id' => $db->lastInsertId()
+            ]);
+            return true;
+        }
+        
+    } catch (\Exception $e) {
+        $leavs->log("خطأ في إنشاء الاجازه", [
+            'error' => $e->getMessage(),
+            'data' => $data
+        ]);
+        throw $e;
+    }
     }
     
    public static function approve($id, $approved_by, $comments = null) {
-    $db = App::db();
+    // $db = App::db();
 
+    // try {
+    //     $db->beginTransaction();
+
+    //     // 1. الحصول على بيانات الإجازة
+    //     $stmt = $db->prepare("SELECT * FROM leaves WHERE id = :id");
+    //     $stmt->execute(['id' => $id]);
+    //     $leave = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+    //     if (!$leave) {
+    //         throw new \Exception("طلب الإجازة غير موجود");
+    //     }
+
+    //     // 2. حساب عدد الأيام
+    //     $daysRequested = (new \DateTime($leave['end_date']))
+    //         ->diff(new \DateTime($leave['start_date']))
+    //         ->days + 1;
+
+    //     // 3. الحصول على بيانات الموظف
+    //     $stmt = $db->prepare("SELECT * FROM employees WHERE id = :emp_id");
+    //     $stmt->execute(['emp_id' => $leave['employee_id']]);
+    //     $employee = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+    //     if (!$employee) {
+    //         throw new \Exception("الموظف غير موجود");
+    //     }
+
+    //     // 4. التحقق من الرصيد
+    //     if ($employee['leaveBalance'] < $daysRequested) {
+    //         throw new \Exception("رصيد الإجازات غير كافٍ");
+    //     }
+
+    //     // 5. تحديث رصيد الموظف
+    //     $newBalance = $employee['leaveBalance'] - $daysRequested;
+    //     $stmt = $db->prepare("UPDATE employees SET leaveBalance = :balance WHERE id = :id");
+    //     $stmt->execute([
+    //         'balance' => $newBalance,
+    //         'id' => $employee['id']
+    //     ]);
+
+    //     // 6. تحديث حالة الإجازة
+    //     $stmt = $db->prepare("
+    //         UPDATE leaves 
+    //         SET status = 'approved', 
+    //             approved_by = :approved_by, 
+    //             comments = :comments,
+    //             updated_at = NOW()
+    //         WHERE id = :id
+    //     ");
+    //     $stmt->execute([
+    //         'id' => $id,
+    //         'approved_by' => $approved_by,
+    //         'comments' => $comments
+    //     ]);
+
+    //     $db->commit();
+    //     return true;
+
+    // } catch (\Throwable $e) {
+    //     if ($db->inTransaction()) $db->rollBack();
+    //     throw $e;
+    // }
+    $leave = new self(); // إنشاء instance
+    
     try {
+        $db = App::db();
         $db->beginTransaction();
 
         // 1. الحصول على بيانات الإجازة
         $stmt = $db->prepare("SELECT * FROM leaves WHERE id = :id");
         $stmt->execute(['id' => $id]);
-        $leave = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $leaveData = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-        if (!$leave) {
+        if (!$leaveData) {
+            $leave->log("طلب الإجازة غير موجود", ['leave_id' => $id]);
             throw new \Exception("طلب الإجازة غير موجود");
         }
 
         // 2. حساب عدد الأيام
-        $daysRequested = (new \DateTime($leave['end_date']))
-            ->diff(new \DateTime($leave['start_date']))
+        $daysRequested = (new \DateTime($leaveData['end_date']))
+            ->diff(new \DateTime($leaveData['start_date']))
             ->days + 1;
 
-        // 3. الحصول على بيانات الموظف
-        $stmt = $db->prepare("SELECT * FROM employees WHERE id = :emp_id");
-        $stmt->execute(['emp_id' => $leave['employee_id']]);
-        $employee = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-        if (!$employee) {
-            throw new \Exception("الموظف غير موجود");
-        }
-
-        // 4. التحقق من الرصيد
-        if ($employee['leaveBalance'] < $daysRequested) {
-            throw new \Exception("رصيد الإجازات غير كافٍ");
-        }
-
-        // 5. تحديث رصيد الموظف
+        // 3. تحديث رصيد الموظف
         $newBalance = $employee['leaveBalance'] - $daysRequested;
         $stmt = $db->prepare("UPDATE employees SET leaveBalance = :balance WHERE id = :id");
         $stmt->execute([
@@ -129,17 +216,35 @@ class Leave {
             'comments' => $comments
         ]);
 
+
         $db->commit();
+        
+        $leave->log("تم الموافقة على الإجازة", [
+            'leave_id' => $id,
+            'approved_by' => $approved_by,
+            'days_requested' => $daysRequested,
+            'new_balance' => $newBalance
+        ]);
+        
         return true;
 
     } catch (\Throwable $e) {
         if ($db->inTransaction()) $db->rollBack();
+        $leave->log("خطأ في الموافقة على الإجازة", [
+            'leave_id' => $id,
+            'error' => $e->getMessage()
+        ]);
         throw $e;
     }
 }
 
     
     public static function reject($id, $rejected_by, $comments = null) {
+
+
+     $leave = new self();
+    
+    try {
         $stmt = App::db()->prepare("
             UPDATE leaves 
             SET status = 'rejected', 
@@ -148,11 +253,32 @@ class Leave {
                 updated_at = NOW()
             WHERE id = :id
         ");
-        return $stmt->execute([
+        $data['id'] = $id;
+        $data['rejected_by'] = $rejected_by;
+        $data['comments'] = $comments;
+        $result = $stmt->execute([
             'id' => $id,
             'rejected_by' => $rejected_by,
             'comments' => $comments
         ]);
+        
+        if ($result) {
+            $leave->log("تم الرفض  على الاجازه ", [
+                'id' => $data['id'],
+                'rejected_by'=>$data['rejected_by'],
+                'comments'=>$data['comments'],
+               
+            ]);
+            return true;
+        }
+        
+    } catch (\Exception $e) {
+        $leave->log("خطأ في الرفض على الاجازه", [
+            'error' => $e->getMessage(),
+            'data' => $data
+        ]);
+        throw $e;
+    }
     }
     
     public static function update($id, $data) {
@@ -184,21 +310,68 @@ class Leave {
     }
     
     public static function softDelete($id) {
+    
+               $leave = new self();
+    
+    try {
         $stmt = App::db()->prepare("
             UPDATE leaves 
             SET deleted_at = NOW() 
             WHERE id = :id
         ");
-        return $stmt->execute(['id' => $id]);
+        $data['id'] = $id;
+        $result = $stmt->execute(['id' => $id]);
+        
+        if ($result) {
+            $leave->log("تم نقل الاجازة الى سلة المهملات ", [
+                'id' => $data['id']
+               
+            ]);
+            return true;
+        }
+        
+    } catch (\Exception $e) {
+        $leave->log("خطأ في نقل الاجازه الى سلة المهملات", [
+            'error' => $e->getMessage(),
+            'data' => $data
+        ]);
+        throw $e;
+    }
     }
     
     public static function restore($id) {
+        // $stmt = App::db()->prepare("
+        //     UPDATE leaves 
+        //     SET deleted_at = NULL 
+        //     WHERE id = :id
+        // ");
+        // return $stmt->execute(['id' => $id]);
+      $leave = new self();
+    
+    try {
         $stmt = App::db()->prepare("
             UPDATE leaves 
             SET deleted_at = NULL 
             WHERE id = :id
         ");
-        return $stmt->execute(['id' => $id]);
+        $data['id'] = $id;
+        $result = $stmt->execute(['id' => $id]);
+        
+        if ($result) {
+            $leave->log("تم استعادة الاجازة من سلة المهملات ", [
+                'id' => $data['id']
+               
+            ]);
+            return true;
+        }
+        
+    } catch (\Exception $e) {
+        $leave->log("خطأ في استعادة الاجازه من سلة المهملات", [
+            'error' => $e->getMessage(),
+            'data' => $data
+        ]);
+        throw $e;
+    }
     }
     
     public static function allTrash() {
