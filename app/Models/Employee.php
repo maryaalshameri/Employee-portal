@@ -25,15 +25,48 @@ class Employee {
     }
 
     public static function create($data) {
+
+
+    $employee = new self();
+    
+    try {
         $stmt = App::db()->prepare("
             INSERT INTO employees
             (user_id, department, position, hire_date, salary, phone, address, work_type, leaveBalance)
             VALUES (:user_id, :department, :position, :hire_date, :salary, :phone, :address, :work_type, :leaveBalance)
         ");
-        return $stmt->execute($data);
+        $result = $stmt->execute($data);
+        
+        if ($result) {
+            $employee->log("تم إنشاء موظف جديد", [
+                'user_id' => $data['user_id'],
+                'employee_id' => App::db()->lastInsertId(),
+                'department' => $data['department']
+            ]);
+            return true;
+        }
+        
+    } catch (\Exception $e) {
+        $employee->log("خطأ في إنشاء موظف", [
+            'error' => $e->getMessage(),
+            'data' => $data
+        ]);
+        throw $e;
     }
 
+        
+    }
+
+
+
+
     public static function update($userId, $data) {
+
+
+
+        $employee = new self();
+    
+    try {
         $stmt = App::db()->prepare("
             UPDATE employees
             SET department = :department,
@@ -47,12 +80,50 @@ class Employee {
             WHERE user_id = :user_id
         ");
         $data['user_id'] = $userId;
-        return $stmt->execute($data);
+        $result = $stmt->execute($data);
+        
+        if ($result) {
+            $employee->log("تم تعديل موظف ", [
+                'user_id' => $data['user_id'],
+               
+                'department' => $data['department']
+            ]);
+            return true;
+        }
+        
+    } catch (\Exception $e) {
+        $employee->log("خطأ في تعديل موظف", [
+            'error' => $e->getMessage(),
+            'data' => $data
+        ]);
+        throw $e;
+    }
     }
 
     public static function softDelete($id){
-        $stmt = App::db()->prepare ("UPDATE employees SET deleted_at = NOW() WHERE id = :id");
-        $stmt->execute(['id' => $id]);
+  
+        $employee = new self();
+    
+    try {
+        $stmt = App::db()->prepare("UPDATE employees SET deleted_at = NOW() WHERE id = :id");
+        $data['user_id'] = $id;
+        $result = $stmt->execute(['id' => $id]);
+        
+        if ($result) {
+            $employee->log("تم نقل الموظف الى سلة المهملات ", [
+                'user_id' => $data['user_id']
+               
+            ]);
+            return true;
+        }
+        
+    } catch (\Exception $e) {
+        $employee->log("خطأ في نقل الموظف الى سلة المهملات", [
+            'error' => $e->getMessage(),
+            'data' => $data
+        ]);
+        throw $e;
+    }
     }
 
     public static function allTrash(){
@@ -63,9 +134,31 @@ class Employee {
     }
 
     public static function employeeRestore($id){
-        $db = App::db();
-        $stmt = $db->prepare("UPDATE employees SET deleted_at = NULL WHERE id = :id");
-        $stmt->execute(['id' => $id]);
+
+                $employee = new self();
+    
+    try {
+        $stmt = App::db()->prepare("UPDATE employees SET deleted_at = NULL WHERE id = :id");
+        $data['user_id'] = $id;
+        $result = $stmt->execute(['id' => $id]);
+        
+        if ($result) {
+            $employee->log("تم استعادة الموظف من  سلة المهملات ", [
+                'user_id' => $data['user_id']
+               
+            ]);
+            return true;
+        }
+        
+    } catch (\Exception $e) {
+        $employee->log("خطأ في استعادة الموظف من سلة المهملات", [
+            'error' => $e->getMessage(),
+            'data' => $data
+        ]);
+        throw $e;
+    }
+
+
     }
 
     public static function getBaseSalary($employeeId) {
@@ -110,9 +203,9 @@ class Employee {
         return $result['count'] > 0;
     }
 
-    // في ملف Employee.php
-// في ملف Employee.php
+
 public static function findByUserId($userId) {
+    
     $stmt = App::db()->prepare("
         SELECT e.*, u.name, u.email, u.role, e.id as employee_id
         FROM employees e
@@ -127,11 +220,7 @@ public static function findByUserId($userId) {
     
     return $result;
 }
-// في نهاية ملف Employee.php
 
-
-
-// في ملف Employee.php
 public static function getManagersWithEvaluationsAndTasks()
 {
     $db = App::db();
@@ -156,7 +245,7 @@ public static function getManagersWithEvaluationsAndTasks()
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// في Employee.php
+
 public static function updateProfile($employeeId, $data)
 {
     $stmt = App::db()->prepare("

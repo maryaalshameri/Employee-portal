@@ -9,16 +9,34 @@ class Task {
 
     public static function create($data)
 {
-    $db = App::db();
+    // $db = App::db();
     
-    $sql = "INSERT INTO tasks 
-            (title, description, assigned_to, due_date, priority, status, created_by)
-            VALUES 
-            (:title, :description, :assigned_to, :due_date, :priority, :status, :created_by)";
+    // $sql = "INSERT INTO tasks 
+    //         (title, description, assigned_to, due_date, priority, status, created_by)
+    //         VALUES 
+    //         (:title, :description, :assigned_to, :due_date, :priority, :status, :created_by)";
     
-    $stmt = $db->prepare($sql);
+    // $stmt = $db->prepare($sql);
     
-    return $stmt->execute([
+    // return $stmt->execute([
+    //     ':title' => $data['title'],
+    //     ':description' => $data['description'] ?? '',
+    //     ':assigned_to' => $data['assigned_to'],
+    //     ':due_date' => $data['due_date'] ?? null,
+    //     ':priority' => $data['priority'] ?? 'medium',
+    //     ':status' => $data['status'] ?? 'todo',
+    //     ':created_by' => $data['created_by'] ?? null
+    // ]);
+        $task = new self();
+    
+    try {
+        $db = App::db();
+        $sql = "INSERT INTO tasks 
+             (title, description, assigned_to, due_date, priority, status, created_by)
+              VALUES 
+             (:title, :description, :assigned_to, :due_date, :priority, :status, :created_by)";
+        $stmt = $db->prepare($sql);
+        $result = $stmt->execute([
         ':title' => $data['title'],
         ':description' => $data['description'] ?? '',
         ':assigned_to' => $data['assigned_to'],
@@ -27,6 +45,23 @@ class Task {
         ':status' => $data['status'] ?? 'todo',
         ':created_by' => $data['created_by'] ?? null
     ]);
+        
+        if ($result) {
+            $task->log("تم إنشاء مهمة جديدة", [
+                'title' => $data['title'],
+                'assigned_to' => $data['assigned_to'],
+                'task_id' => $db->lastInsertId()
+            ]);
+            return true;
+        }
+        
+    } catch (\Exception $e) {
+        $task->log("خطأ في إنشاء المهمة", [
+            'error' => $e->getMessage(),
+            'data' => $data
+        ]);
+        throw $e;
+    }
 }
 
 public static function updateStatus($taskId, $status)

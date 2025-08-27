@@ -33,22 +33,43 @@ public static function create($data) {
         
         $result = $stmt->execute($params);
         
-        if ($result) {
-            error_log("Evaluation created successfully for employee ID: " . $data['employee_id']);
+   if ($result) {
+            // استخدام التسجيل
+            $evaluation = new self();
+            $evaluation->log("تم إنشاء تقييم جديد", [
+                'employee_id' => $data['employee_id'],
+                'evaluator_id' => $data['evaluator_id'],
+                'evaluation_id' => $db->lastInsertId()
+            ]);
+            
             return true;
         } else {
             $errorInfo = $stmt->errorInfo();
-            error_log("SQL Error: " . print_r($errorInfo, true));
+            $evaluation = new self();
+            $evaluation->log("خطأ في إنشاء التقييم", [
+                'error' => $errorInfo,
+                'data' => $data
+            ]);
             return false;
         }
         
     } catch (\PDOException $e) {
-        error_log("PDO Exception: " . $e->getMessage());
+        $evaluation = new self();
+        $evaluation->log("استثناء في إنشاء التقييم", [
+            'error' => $e->getMessage(),
+            'data' => $data
+        ]);
         return false;
     }
 }
     
     public static function find($id) {
+
+
+
+        $evaluation = new self();
+    
+    try {
         $stmt = App::db()->prepare("
             SELECT e.*, 
                    u.name as employee_name, 
@@ -61,20 +82,25 @@ public static function create($data) {
             WHERE e.id = :id AND e.deleted_at IS NULL
         ");
         $stmt->execute(['id' => $id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $evaluation->log("بحث عن التقييم", [
+            'evaluation_id' => $id,
+            'found' => $result ? 'نعم' : 'لا'
+        ]);
+        
+        return $result;
+        
+    } catch (\Exception $e) {
+        $evaluation->log("خطأ في البحث عن التقييم", [
+            'evaluation_id' => $id,
+            'error' => $e->getMessage()
+        ]);
+        return false;
+    }
     }
     
-    // public static function getEmployeeEvaluations($employeeId) {
-    //     $stmt = App::db()->prepare("
-    //         SELECT e.*, eval.name as evaluator_name
-    //         FROM evaluations e
-    //         JOIN users eval ON e.evaluator_id = eval.id
-    //         WHERE e.employee_id = :employee_id AND e.deleted_at IS NULL
-    //         ORDER BY e.evaluation_date DESC
-    //     ");
-    //     $stmt->execute(['employee_id' => $employeeId]);
-    //     return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    // }
+
     
     public static function getDepartmentEvaluations($department) {
         $stmt = App::db()->prepare("
@@ -93,20 +119,7 @@ public static function create($data) {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    // public static function getAverageScores($employeeId) {
-    //     $stmt = App::db()->prepare("
-    //         SELECT 
-    //             AVG(performance_score) as avg_performance,
-    //             AVG(quality_score) as avg_quality,
-    //             AVG(punctuality_score) as avg_punctuality,
-    //             AVG(teamwork_score) as avg_teamwork,
-    //             COUNT(*) as total_evaluations
-    //         FROM evaluations 
-    //         WHERE employee_id = :employee_id AND deleted_at IS NULL
-    //     ");
-    //     $stmt->execute(['employee_id' => $employeeId]);
-    //     return $stmt->fetch(PDO::FETCH_ASSOC);
-    // }
+
     
     public static function update($id, $data) {
         $stmt = App::db()->prepare("
